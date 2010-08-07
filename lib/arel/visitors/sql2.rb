@@ -28,6 +28,12 @@ module Arel
         ].join ' '
       end
 
+      def visit_Arel_Sql_Attributes_Integer o
+        table = o.relation
+        "#{quote_table_name(table.name)}.#{quote_column_name(o.name)}"
+      end
+      alias :visit_Arel_Sql_Attributes_String :visit_Arel_Sql_Attributes_Integer
+
       def visit_Arel_Value o
         o.value
       end
@@ -59,11 +65,6 @@ module Arel
 
       def visit_Arel_Predicates_Equality o
         "#{visit o.operand1} #{o.predicate_sql} #{visit o.operand2}"
-      end
-
-      def visit_Arel_Sql_Attributes_Integer o
-        table = o.relation
-        "#{quote_table_name(table.name)}.#{quote_column_name(o.name)}"
       end
 
       def visit_Fixnum o

@@ -39,6 +39,9 @@ module Arel
           cursor = cursor.relation
         end
 
+        # If no columns were specified, use the table attributes
+        projects = tables.first.attributes if projects.blank?
+
         node = Nodes::Select.new projects, tables, wheres, [], [], takes
 
         # SELECT <PROJECT> FROM <TABLE> WHERE <WHERE> LIMIT <TAKE>

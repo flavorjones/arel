@@ -79,7 +79,7 @@ module Arel
         call(o, :relation) { |t| visit t }
         call(o, :name) { |t| visit t }
         call(o, :christener) { |t| visit t }
-        #call(o, :attributes) { |t| visit t }
+        call(o, :attributes) { |t| visit t }
         @stack.pop
       end
 
