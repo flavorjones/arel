@@ -204,7 +204,7 @@ module Arel
       end
 
       def to_sql
-        viz = Arel::Visitors::Sql2.new relation
+        viz = Arel::Visitors::Sql2.new relation.engine
         viz.accept self
       end
     end
