@@ -23,6 +23,7 @@ module Arel
           "SELECT #{o.columns.map { |c| visit c }.join(', ')}",
           "FROM   #{o.sources.map { |c| visit c }.join(', ')}",
           ("WHERE  #{o.wheres.map { |c| visit c }.join(' AND ')}" unless o.wheres.empty?),
+          ("ORDER BY #{o.orders.map { |c| visit c }.join(', ')}" unless o.orders.empty?),
           ("LIMIT  #{o.limits.map { |c| visit c }.join}" unless o.limits.empty?),
         ].join ' '
       end
@@ -37,12 +38,19 @@ module Arel
 
       def visit_Arel_Sql_Attributes_Integer o
         table = o.relation
-        "#{quote_table_name(table.name)}.#{quote_column_name(o.name)}"
+        "#{quote_table_name(table.table_alias || table.name)}.#{quote_column_name(o.name)}"
       end
       alias :visit_Arel_Sql_Attributes_String :visit_Arel_Sql_Attributes_Integer
+      alias :visit_Arel_Attribute :visit_Arel_Sql_Attributes_Integer
 
       def visit_Arel_Value o
         o.value
+      end
+
+      def visit_Arel_Ascending o; 'ASC' end
+
+      def visit_Arel_Order o
+        o.orderings.map { |x| "#{visit x} #{visit o.direction}" }.join ', '
       end
 
       def visit_Arel_Project o
@@ -50,7 +58,10 @@ module Arel
       end
 
       def visit_Arel_Table o
-        quote_table_name(o.name)
+        [
+          quote_table_name(o.name),
+          (o.table_alias ? quote_table_name(o.table_alias) : ''),
+        ].join ' '
       end
 
       def visit_Arel_Where o

@@ -1,9 +1,17 @@
 module Arel
   class Order < Compound
-    attr_reader :orderings
+    attr_reader :orderings, :direction
 
-    def initialize(relation, orderings)
+    def initialize(relation, orderings, direction = Ascending.new)
       super(relation)
+
+      # FIXME: Why do orders that are strings not include the direction?
+      # This behavior is inconsistent with other orders.
+      unless orderings.grep(::String).empty?
+        direction = ''
+      end
+
+      @direction = direction
       @orderings = orderings.collect { |o| o.bind(relation) }
     end
 

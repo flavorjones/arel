@@ -20,6 +20,7 @@ module Arel
         wheres   = []
         takes    = []
         joins    = []
+        orders   = []
 
         loop do
           case cursor
@@ -35,6 +36,8 @@ module Arel
             wheres << cursor
           when Arel::Take
             takes << cursor
+          when Arel::Order
+            orders << cursor
           end
           cursor = cursor.relation
         end
@@ -42,9 +45,16 @@ module Arel
         # If no columns were specified, use the table attributes
         projects = tables.first.attributes if projects.blank?
 
-        node = Nodes::Select.new projects, tables, wheres, [], [], takes
+        node = Nodes::Select.new projects, tables, wheres, [], orders, takes
 
         # SELECT <PROJECT> FROM <TABLE> WHERE <WHERE> LIMIT <TAKE>
+
+        if $DEBUG
+          viz = Arel::Visitors::Dot.new
+          File.open('/Users/apatterson/h.dot', 'wb') do |f|
+            f.write viz.accept relation
+          end
+        end
 
         viz = Arel::Visitors::Sql2.new relation.engine
         viz.accept node

@@ -18,6 +18,14 @@ module Arel
       Edge = Struct.new :name, :left, :right
 
       private
+      def visit_Arel_Order o
+        @stack.push o
+        call(o, :relation) { |t| visit t }
+        call(o, :orderings) { |t| visit t }
+        call(o, :direction) { |t| visit t }
+        @stack.pop
+      end
+
       def visit_Arel_Nodes_Count o
         @stack.push o
         call(o, :expression) { |t| visit t }
@@ -95,11 +103,14 @@ module Arel
       def visit_Fixnum o; end
       def visit_Symbol o; end
       def visit_Arel_Sql_Christener o; end
+      def visit_Arel_Ascending o; end
+
 
       def visit_Arel_Table o
         @stack.push o
         call(o, :relation) { |t| visit t }
         call(o, :name) { |t| visit t }
+        call(o, :table_alias) { |t| visit t }
         call(o, :christener) { |t| visit t }
         call(o, :attributes) { |t| visit t }
         @stack.pop
