@@ -21,11 +21,15 @@ module Arel
       def visit_Arel_Nodes_Select o
         [
           "SELECT #{o.columns.map { |c| visit c }.join(', ')}",
-          "FROM   #{o.sources.map { |c| visit c }.join(', ')}",
+          "FROM   #{o.sources.map { |c| visit c }.join(' ')}",
           ("WHERE  #{o.wheres.map { |c| visit c }.join(' AND ')}" unless o.wheres.empty?),
           ("ORDER BY #{o.orders.map { |c| visit c }.join(', ')}" unless o.orders.empty?),
           ("LIMIT  #{o.limits.map { |c| visit c }.join}" unless o.limits.empty?),
         ].join ' '
+      end
+
+      def visit_Arel_InnerJoin o
+        "#{visit o.relation1} #{o.join_sql} #{visit o.relation2} ON #{o.predicates.map { |x| visit x }.join ' AND ' }"
       end
 
       def visit_Arel_Nodes_Subquery o
@@ -42,6 +46,10 @@ module Arel
       end
       alias :visit_Arel_Sql_Attributes_String :visit_Arel_Sql_Attributes_Integer
       alias :visit_Arel_Attribute :visit_Arel_Sql_Attributes_Integer
+
+      def visit_Arel_StringJoin o
+        o.relation2
+      end
 
       def visit_Arel_Value o
         o.value

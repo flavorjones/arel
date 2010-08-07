@@ -81,6 +81,16 @@ module Arel
         @stack.pop
       end
 
+      def visit_Arel_Join o
+        @stack.push o
+        call(o, :relation1) { |t| visit t }
+        call(o, :relation2) { |t| visit t }
+        call(o, :predicates) { |t| visit t }
+        @stack.pop
+      end
+      alias :visit_Arel_StringJoin :visit_Arel_Join
+      alias :visit_Arel_InnerJoin :visit_Arel_Join
+
       def visit_Arel_Header o
         @stack.push o
         call(o, :to_ary) { |t| visit t }

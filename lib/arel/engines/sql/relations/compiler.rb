@@ -18,19 +18,24 @@ module Arel
         projects = []
         tables   = []
         wheres   = []
-        takes    = []
+        sources  = []
         joins    = []
         orders   = []
+        takes    = []
 
         loop do
           case cursor
           when Arel::Project
             projects << cursor
+          when Arel::StringJoin
+            sources << cursor
+            cursor = cursor.relation1
+            next
           when Arel::Table
-            tables << cursor
+            sources << cursor
             break
           when Arel::Join
-            joins << cursor
+            sources << cursor
             break
           when Arel::Where
             wheres << cursor
@@ -43,9 +48,19 @@ module Arel
         end
 
         # If no columns were specified, use the table attributes
-        projects = tables.first.attributes if projects.blank?
+        if projects.blank?
+          source = sources.last
+          case source
+          when InnerJoin
+            projects = source.relation1.attributes | source.relation2.attributes
+          else
+            projects = source.attributes
+          end
+        end
 
-        node = Nodes::Select.new projects, tables, wheres, [], orders, takes
+        node = Nodes::Select.new(
+          projects,
+          sources.reverse, wheres, [], orders, takes)
 
         # SELECT <PROJECT> FROM <TABLE> WHERE <WHERE> LIMIT <TAKE>
 
