@@ -94,6 +94,7 @@ module Arel
       def visit_Arel_Predicates_Equality o
         "#{visit o.operand1} #{o.predicate_sql} #{visit o.operand2}"
       end
+      alias :visit_Arel_Predicates_Inequality :visit_Arel_Predicates_Equality
 
       def visit_Fixnum o
         o.to_s
