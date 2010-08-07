@@ -18,6 +18,13 @@ module Arel
       Edge = Struct.new :name, :left, :right
 
       private
+      def visit_Arel_Predicates_Equality o
+        @stack.push o
+        call(o, :operand1) { |t| visit t }
+        call(o, :operand2) { |t| visit t }
+        @stack.pop
+      end
+
       def visit_Arel_Value o
         @stack.push o
         call(o, :relation) { |t| visit t }
