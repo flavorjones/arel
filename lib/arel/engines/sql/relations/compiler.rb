@@ -13,8 +13,40 @@ module Arel
       end
 
       def select_sql
-        viz = Arel::Visitors::Sql.new relation
-        viz.accept relation
+        cursor    = relation
+
+        projects = []
+        tables   = []
+        wheres   = []
+        takes    = []
+        joins    = []
+
+        loop do
+          case cursor
+          when Arel::Project
+            projects << cursor
+          when Arel::Table
+            tables << cursor
+            break
+          when Arel::Join
+            joins << cursor
+            break
+          when Arel::Where
+            wheres << cursor
+          when Arel::Take
+            takes << cursor
+          end
+          cursor = cursor.relation
+        end
+
+        node = Nodes::Select.new projects, tables, wheres, [], [], takes
+
+        # SELECT <PROJECT> FROM <TABLE> WHERE <WHERE> LIMIT <TAKE>
+
+        viz = Arel::Visitors::Sql2.new relation
+        viz.accept node
+        #viz = Arel::Visitors::Sql.new relation
+        #viz.accept relation
       end
 
       def delete_sql

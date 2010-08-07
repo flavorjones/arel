@@ -202,6 +202,11 @@ module Arel
       def predicate_sql
         operand2.equality_predicate_sql
       end
+
+      def to_sql
+        viz = Arel::Visitors::Sql2.new relation
+        viz.accept self
+      end
     end
 
     class Inequality < Equality

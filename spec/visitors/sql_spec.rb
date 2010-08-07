@@ -21,16 +21,20 @@ module Arel
     describe "average" do
       it "should convert to sql" do
         relation = Table.new :users
-        sql = relation.project(SqlLiteral.new("id").average).to_sql
-        sql.should =~ /AVG\(id\)/
+        sql = relation.project(SqlLiteral.new("id").average)
+        sql.to_sql.should be_like %{
+          SELECT AVG(id) AS avg_id FROM "users"
+        }
       end
     end
 
     describe "min" do
       it "should convert to sql" do
         relation = Table.new :users
-        sql = relation.project(SqlLiteral.new("id").minimum).to_sql
-        sql.should =~ /MIN\(id\)/
+        sql = relation.project(SqlLiteral.new("id").minimum)
+        sql.to_sql.should be_like %{
+          SELECT MIN(id) AS min_id FROM "users"
+        }
       end
     end
 
@@ -38,7 +42,9 @@ module Arel
       it "should convert to sql" do
         relation = Table.new :users
         sql = relation.project(SqlLiteral.new("id").maximum).to_sql
-        sql.should =~ /MAX\(id\)/
+        sql.should be_like %{
+          SELECT MAX(id) AS max_id FROM   "users"
+        }
       end
     end
   end

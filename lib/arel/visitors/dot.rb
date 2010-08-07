@@ -18,6 +18,15 @@ module Arel
       Edge = Struct.new :name, :left, :right
 
       private
+      def visit_Arel_Maximum o
+        visit_Arel_Attribute o
+        @stack.push o
+        call(o, :attribute) { |t| visit t }
+        @stack.pop
+      end
+      alias :visit_Arel_Minimum :visit_Arel_Maximum
+      alias :visit_Arel_Average :visit_Arel_Maximum
+
       def visit_Arel_Predicates_Equality o
         @stack.push o
         call(o, :operand1) { |t| visit t }
