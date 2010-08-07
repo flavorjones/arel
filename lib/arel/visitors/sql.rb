@@ -4,7 +4,6 @@ module Arel
       DISPATCH = {}
 
       def initialize environment
-        @dispatch_cache = {}
         @environment = environment
         @engine      = environment.engine
         @christener  = nil

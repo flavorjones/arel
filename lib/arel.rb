@@ -13,5 +13,7 @@ module Arel
   autoload :Session, 'arel/session'
 end
 
+require 'arel/nodes'
 require 'arel/visitors/sql'
+require 'arel/visitors/sql2'
 require 'arel/visitors/dot'

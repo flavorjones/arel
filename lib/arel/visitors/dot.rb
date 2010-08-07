@@ -91,7 +91,13 @@ module Arel
         end
         @stack.pop
       end
-      alias :visit_Arel_Where :visit_Arel_Project
+
+      def visit_Arel_Where o
+        visit_Arel_Project o
+        @stack.push o
+        call(o, :predicates) { |t| visit t }
+        @stack.pop
+      end
 
       def visit o
         return if ::Array === o && o.empty?
