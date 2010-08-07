@@ -18,6 +18,27 @@ module Arel
       Edge = Struct.new :name, :left, :right
 
       private
+      def visit_Arel_Nodes_Count o
+        @stack.push o
+        call(o, :expression) { |t| visit t }
+        @stack.pop
+      end
+
+      def visit_Arel_Nodes_Subquery o
+        @stack.push o
+        call(o, :expression) { |t| visit t }
+        @stack.pop
+      end
+
+      def visit_Arel_Nodes_Select o
+        @stack.push o
+        call(o, :columns) { |t| t.each { |x| visit x } }
+        call(o, :sources) { |t| t.each { |x| visit x } }
+        call(o, :wheres) { |t| t.each { |x| visit x } }
+        call(o, :limits) { |t| t.each { |x| visit x } }
+        @stack.pop
+      end
+
       def visit_Arel_Maximum o
         visit_Arel_Attribute o
         @stack.push o
@@ -26,6 +47,7 @@ module Arel
       end
       alias :visit_Arel_Minimum :visit_Arel_Maximum
       alias :visit_Arel_Average :visit_Arel_Maximum
+      alias :visit_Arel_Count :visit_Arel_Maximum
 
       def visit_Arel_Predicates_Equality o
         @stack.push o

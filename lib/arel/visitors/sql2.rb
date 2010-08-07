@@ -3,9 +3,8 @@ module Arel
     class Sql2
       DISPATCH = {}
 
-      def initialize environment
-        @environment = environment
-        @engine      = environment.engine
+      def initialize engine
+        @engine      = engine
         @christener  = nil
         @connection  = nil
       end
@@ -26,6 +25,14 @@ module Arel
           ("WHERE  #{o.wheres.map { |c| visit c }.join(' AND ')}" unless o.wheres.empty?),
           ("LIMIT  #{o.limits.map { |c| visit c }.join}" unless o.limits.empty?),
         ].join ' '
+      end
+
+      def visit_Arel_Nodes_Subquery o
+        "(#{visit o.expression}) AS subquery"
+      end
+
+      def visit_Arel_Nodes_Count o
+        "COUNT(#{visit o.expression}) AS count_id"
       end
 
       def visit_Arel_Sql_Attributes_Integer o
@@ -54,14 +61,16 @@ module Arel
         o.taken
       end
 
-      def visit_Arel_Maximum o
+      def visit_Arel_Expression o
         "#{o.function_sql}(#{visit o.attribute}) AS " +
           (o.alias ?
             quote_column_name(o.alias) :
             "#{o.function_sql.to_s.downcase}_id")
       end
-      alias :visit_Arel_Minimum :visit_Arel_Maximum
-      alias :visit_Arel_Average :visit_Arel_Maximum
+      alias :visit_Arel_Maximum :visit_Arel_Expression
+      alias :visit_Arel_Minimum :visit_Arel_Expression
+      alias :visit_Arel_Average :visit_Arel_Expression
+      alias :visit_Arel_Count :visit_Arel_Expression
 
       def visit_Arel_Predicates_Equality o
         "#{visit o.operand1} #{o.predicate_sql} #{visit o.operand2}"
@@ -70,6 +79,7 @@ module Arel
       def visit_Fixnum o
         o.to_s
       end
+      def visit_String o; o end
 
       def visit object
         method = object.class.name.gsub '::', '_'

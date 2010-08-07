@@ -46,7 +46,7 @@ module Arel
 
         # SELECT <PROJECT> FROM <TABLE> WHERE <WHERE> LIMIT <TAKE>
 
-        viz = Arel::Visitors::Sql2.new relation
+        viz = Arel::Visitors::Sql2.new relation.engine
         viz.accept node
         #viz = Arel::Visitors::Sql.new relation
         #viz.accept relation
