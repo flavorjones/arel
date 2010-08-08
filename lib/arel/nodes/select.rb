@@ -2,7 +2,7 @@ module Arel
   module Nodes
     class Select < Arel::Nodes::Node
       attr_reader :columns, :sources, :wheres, :groups, :orders, :limits
-      attr_reader :offset
+      attr_reader :offset, :engine
 
       def initialize columns, sources, wheres, groups, orders, limits, offset, engine = Table.engine
         @columns = columns

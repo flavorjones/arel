@@ -15,7 +15,7 @@ module Arel
       def select_sql
         node = Visitors::Sql2.linked_list_to_tree relation
 
-        viz = Arel::Visitors::Sql2.new relation.engine
+        viz = Arel::Visitors::Sql2.new node.engine
         viz.accept node
         #viz = Arel::Visitors::Sql.new relation
         #viz.accept relation

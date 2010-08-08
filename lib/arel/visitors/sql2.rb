@@ -58,10 +58,11 @@ module Arel
         end
 
         # SELECT <PROJECT> FROM <TABLE> WHERE <WHERE> LIMIT <TAKE>
+        engine = sources.first.engine
 
         Nodes::Select.new(
           projects,
-          sources.reverse, wheres, [], orders, takes, offset)
+          sources.reverse, wheres, [], orders, takes, offset, engine)
       end
 
       def initialize engine
