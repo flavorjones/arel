@@ -13,66 +13,7 @@ module Arel
       end
 
       def select_sql
-        cursor    = relation
-
-        projects = []
-        tables   = []
-        wheres   = []
-        sources  = []
-        joins    = []
-        orders   = []
-        offset   = nil
-        takes    = []
-
-        loop do
-          case cursor
-          when Arel::Project
-            projects << cursor
-          when Arel::StringJoin
-            sources << cursor
-            cursor = cursor.relation1
-            next
-          when Arel::Table
-            sources << cursor
-            break
-          when Arel::Join
-            sources << cursor
-            break
-          when Arel::Where
-            wheres << cursor
-          when Arel::Take
-            takes << cursor
-          when Arel::Order
-            orders << cursor
-          when Arel::Skip
-            offset = cursor
-          end
-          cursor = cursor.relation
-        end
-
-        # If no columns were specified, use the table attributes
-        if projects.blank?
-          source = sources.last
-          case source
-          when InnerJoin
-            projects = source.relation1.attributes | source.relation2.attributes
-          else
-            projects = source.attributes
-          end
-        end
-
-        node = Nodes::Select.new(
-          projects,
-          sources.reverse, wheres, [], orders, takes, offset)
-
-        # SELECT <PROJECT> FROM <TABLE> WHERE <WHERE> LIMIT <TAKE>
-
-        if $DEBUG
-          viz = Arel::Visitors::Dot.new
-          File.open('/Users/apatterson/h.dot', 'wb') do |f|
-            f.write viz.accept relation
-          end
-        end
+        node = Visitors::Sql2.linked_list_to_tree relation
 
         viz = Arel::Visitors::Sql2.new relation.engine
         viz.accept node

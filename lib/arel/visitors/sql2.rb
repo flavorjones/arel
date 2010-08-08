@@ -3,6 +3,67 @@ module Arel
     class Sql2
       DISPATCH = {}
 
+      def self.linked_list_to_tree cursor
+        if $DEBUG
+          viz = Arel::Visitors::Dot.new
+          File.open(File.expand_path('~/h.dot'), 'wb') do |f|
+            f.write viz.accept cursor
+          end
+        end
+
+        projects = []
+        tables   = []
+        wheres   = []
+        sources  = []
+        joins    = []
+        orders   = []
+        offset   = nil
+        takes    = []
+
+        loop do
+          case cursor
+          when Arel::Project
+            projects << cursor
+          when Arel::StringJoin
+            sources << cursor
+            cursor = cursor.relation1
+            next
+          when Arel::Table
+            sources << cursor
+            break
+          when Arel::Join
+            sources << cursor
+            break
+          when Arel::Where
+            wheres << cursor
+          when Arel::Take
+            takes << cursor
+          when Arel::Order
+            orders << cursor
+          when Arel::Skip
+            offset = cursor
+          end
+          cursor = cursor.relation
+        end
+
+        # If no columns were specified, use the table attributes
+        if projects.blank?
+          source = sources.last
+          case source
+          when InnerJoin
+            projects = source.relation1.attributes | source.relation2.attributes
+          else
+            projects = source.attributes
+          end
+        end
+
+        # SELECT <PROJECT> FROM <TABLE> WHERE <WHERE> LIMIT <TAKE>
+
+        Nodes::Select.new(
+          projects,
+          sources.reverse, wheres, [], orders, takes, offset)
+      end
+
       def initialize engine
         @engine      = engine
         @christener  = nil
@@ -34,7 +95,7 @@ module Arel
       end
 
       def visit_Arel_Nodes_Subquery o
-        "(#{visit o.expression}) AS subquery"
+        "(#{visit o.expression}) AS #{visit o.alias}"
       end
 
       def visit_Arel_Nodes_Count o
@@ -75,8 +136,8 @@ module Arel
       def visit_Arel_Table o
         [
           quote_table_name(o.name),
-          (o.table_alias ? quote_table_name(o.table_alias) : ''),
-        ].join ' '
+          (o.table_alias && quote_table_name(o.table_alias)),
+        ].compact.join ' '
       end
 
       def visit_Arel_Where o

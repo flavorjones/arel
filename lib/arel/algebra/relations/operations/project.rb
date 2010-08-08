@@ -4,7 +4,14 @@ module Arel
 
     def initialize(relation, projections)
       super(relation)
-      @projections = projections.map { |p| p.bind(relation) }
+      @projections = projections.map { |p|
+        case p
+        when Project
+          Nodes::Subquery.new Visitors::Sql2.linked_list_to_tree(p), relation
+        else
+          p.bind(relation)
+        end
+      }
       @christener = Sql::Christener.new
       @attributes = Header.new(projections.map { |x| x.bind(self) })
     end

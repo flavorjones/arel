@@ -47,10 +47,10 @@ module Arel
 
       def visit_Arel_Nodes_Select o
         @stack.push o
-        call(o, :columns) { |t| t.each { |x| visit x } }
-        call(o, :sources) { |t| t.each { |x| visit x } }
-        call(o, :wheres) { |t| t.each { |x| visit x } }
-        call(o, :limits) { |t| t.each { |x| visit x } }
+        call(o, :columns) { |t| visit t }
+        call(o, :sources) { |t| visit t }
+        call(o, :wheres) { |t| visit t }
+        call(o, :limits) { |t| visit t }
         @stack.pop
       end
 
