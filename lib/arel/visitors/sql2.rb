@@ -80,6 +80,11 @@ module Arel
         o.taken
       end
 
+      def visit_Arel_Distinct o
+        "DISTINCT #{visit o.attribute}" +
+          (o.alias ? " AS #{quote_column_name(o.alias)}" : '')
+      end
+
       def visit_Arel_Expression o
         "#{o.function_sql}(#{visit o.attribute}) AS " +
           (o.alias ?
