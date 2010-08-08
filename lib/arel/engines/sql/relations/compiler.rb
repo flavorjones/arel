@@ -21,6 +21,7 @@ module Arel
         sources  = []
         joins    = []
         orders   = []
+        offset   = nil
         takes    = []
 
         loop do
@@ -43,6 +44,8 @@ module Arel
             takes << cursor
           when Arel::Order
             orders << cursor
+          when Arel::Skip
+            offset = cursor
           end
           cursor = cursor.relation
         end
@@ -60,7 +63,7 @@ module Arel
 
         node = Nodes::Select.new(
           projects,
-          sources.reverse, wheres, [], orders, takes)
+          sources.reverse, wheres, [], orders, takes, offset)
 
         # SELECT <PROJECT> FROM <TABLE> WHERE <WHERE> LIMIT <TAKE>
 

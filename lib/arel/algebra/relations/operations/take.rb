@@ -18,10 +18,11 @@ module Arel
         [],
         [],
         [],
-        [obj]
+        [obj],
+        nil
       )
       count = Nodes::Count.new "*"
-      Nodes::Select.new [count], [subquery], [], [], [], [], relation.relation.engine
+      Nodes::Select.new [count], [subquery], [], [], [], [], nil, relation.relation.engine
     end
 
     def initialize relation, taken

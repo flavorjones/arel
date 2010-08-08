@@ -25,7 +25,8 @@ module Arel
           ("WHERE  #{o.wheres.map { |c| visit c }.join(' AND ')}" unless o.wheres.empty?),
           ("ORDER BY #{o.orders.map { |c| visit c }.join(', ')}" unless o.orders.empty?),
           ("LIMIT  #{o.limits.map { |c| visit c }.join}" unless o.limits.empty?),
-        ].join ' '
+          (visit o.offset if o.offset),
+        ].compact.join ' '
       end
 
       def visit_Arel_InnerJoin o
@@ -38,6 +39,10 @@ module Arel
 
       def visit_Arel_Nodes_Count o
         "COUNT(#{visit o.expression}) AS count_id"
+      end
+
+      def visit_Arel_Skip o
+        "OFFSET #{o.skipped}"
       end
 
       def visit_Arel_Attribute o
