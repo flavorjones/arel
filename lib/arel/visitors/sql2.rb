@@ -40,12 +40,14 @@ module Arel
         "COUNT(#{visit o.expression}) AS count_id"
       end
 
-      def visit_Arel_Sql_Attributes_Integer o
+      def visit_Arel_Attribute o
         table = o.relation
         "#{quote_table_name(table.table_alias || table.name)}.#{quote_column_name(o.name)}"
       end
-      alias :visit_Arel_Sql_Attributes_String :visit_Arel_Sql_Attributes_Integer
-      alias :visit_Arel_Attribute :visit_Arel_Sql_Attributes_Integer
+      alias :visit_Arel_Sql_Attributes_String :visit_Arel_Attribute
+      alias :visit_Arel_Sql_Attributes_Integer :visit_Arel_Attribute
+      alias :visit_Arel_Sql_Attributes_Time :visit_Arel_Attribute
+      alias :visit_Arel_Sql_Attribute :visit_Arel_Attribute
 
       def visit_Arel_StringJoin o
         o.relation2
