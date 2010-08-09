@@ -18,6 +18,7 @@ module Arel
         joins    = []
         orders   = []
         offset   = nil
+        groups   = []
         takes    = []
 
         loop do
@@ -38,6 +39,8 @@ module Arel
             wheres << cursor
           when Arel::Take
             takes << cursor
+          when Arel::Group
+            groups << cursor
           when Arel::Order
             orders << cursor
           when Arel::Skip
@@ -62,7 +65,7 @@ module Arel
 
         Nodes::Select.new(
           projects,
-          sources.reverse, wheres, [], orders, takes, offset, engine)
+          sources.reverse, wheres, groups, orders, takes, offset, engine)
       end
 
       def initialize engine
@@ -85,6 +88,7 @@ module Arel
           "SELECT #{o.columns.map { |c| visit c }.join(', ')}",
           "FROM   #{o.sources.map { |c| visit c }.join(' ')}",
           ("WHERE  #{o.wheres.map { |c| visit c }.join(' AND ')}" unless o.wheres.empty?),
+          ("GROUP BY #{o.groups.map { |c| visit c }.join(', ')}" unless o.groups.empty?),
           ("ORDER BY #{o.orders.map { |c| visit c }.join(', ')}" unless o.orders.empty?),
           ("LIMIT  #{o.limits.map { |c| visit c }.join}" unless o.limits.empty?),
           (visit o.offset if o.offset),
@@ -105,6 +109,10 @@ module Arel
 
       def visit_Arel_Skip o
         "OFFSET #{o.skipped}"
+      end
+
+      def visit_Arel_Group o
+        o.groupings.map { |x| visit x }.join ', '
       end
 
       def visit_Arel_Attribute o
