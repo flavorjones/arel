@@ -42,7 +42,12 @@ module Arel
 
       describe 'when given two predicates' do
         it "manufactures sql with where clause conditions joined by AND" do
-          sql = @relation.group(@relation[:department]).having("MIN(salary) > 1000", "MAX(salary) < 10000").to_sql
+          sql = @relation.group(@relation[:department]).having("MIN(salary) > 1000", "MAX(salary) < 10000")
+        viz = Arel::Visitors::Dot.new
+        File.open('/Users/apatterson/h.dot', 'wb') do |f|
+          f.write viz.accept sql
+        end
+          sql = sql.to_sql
 
           adapter_is :mysql do
             sql.should be_like(%Q{
