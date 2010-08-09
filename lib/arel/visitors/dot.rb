@@ -18,6 +18,13 @@ module Arel
       Edge = Struct.new :name, :left, :right
 
       private
+      def visit_Arel_Alias o
+        @stack.push o
+        call(o, :relation) { |t| visit t }
+        call(o, :attributes) { |t| visit t }
+        @stack.pop
+      end
+
       def visit_Arel_From o
         @stack.push o
         call(o, :relation) { |t| visit t }
