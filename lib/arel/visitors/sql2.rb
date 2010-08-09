@@ -172,6 +172,7 @@ module Arel
       alias :visit_Arel_Minimum :visit_Arel_Expression
       alias :visit_Arel_Average :visit_Arel_Expression
       alias :visit_Arel_Count :visit_Arel_Expression
+      alias :visit_Arel_Sum :visit_Arel_Expression
 
       def visit_Arel_Predicates_Equality o
         "#{visit o.operand1} #{o.predicate_sql} #{visit o.operand2}"
