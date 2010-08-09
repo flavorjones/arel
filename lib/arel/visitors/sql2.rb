@@ -141,7 +141,7 @@ module Arel
       end
 
       def visit_Arel_Value o
-        o.value
+        o.value || 'NULL'
       end
 
       def visit_Arel_Ascending o; 'ASC' end
@@ -190,6 +190,10 @@ module Arel
         "#{visit o.operand1} #{o.predicate_sql} #{visit o.operand2}"
       end
       alias :visit_Arel_Predicates_Inequality :visit_Arel_Predicates_Equality
+
+      def visit_NilClass o
+        'NULL'
+      end
 
       def visit_Fixnum o
         o.to_s
