@@ -30,7 +30,7 @@ module Arel
             sources << cursor
             cursor = cursor.relation1
             next
-          when Arel::Table
+          when Arel::Table, Arel::From
             sources << cursor
             break
           when Arel::Join
@@ -97,6 +97,10 @@ module Arel
           ("LIMIT  #{o.limits.map { |c| visit c }.join}" unless o.limits.empty?),
           (visit o.offset if o.offset),
         ].compact.join ' '
+      end
+
+      def visit_Arel_From o
+        o.sources.map { |x| visit x }.join ', '
       end
 
       def visit_Arel_InnerJoin o
