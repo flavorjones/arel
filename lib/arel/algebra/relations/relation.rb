@@ -149,7 +149,13 @@ module Arel
 
     JoinOperation = Struct.new(:join_class, :relation1, :relation2) do
       def on(*predicates)
-        join_class.new(relation1, relation2, *predicates)
+        if Arel::Where === relation2
+          join = join_class.new(relation1, relation2.relation, *predicates)
+          join.predicates.concat relation2.predicates
+          join
+        else
+          join_class.new(relation1, relation2, *predicates)
+        end
       end
     end
 

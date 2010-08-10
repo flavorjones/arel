@@ -3,8 +3,9 @@ require 'set'
 module Arel
   class TypecastError < StandardError ; end
   class Attribute
-    attr_reader :relation, :name, :alias, :ancestor, :hash
+    attr_reader :name, :alias, :ancestor
     attr_reader :history, :root
+    attr_accessor :relation
 
     def initialize(relation, name, options = {})
       @relation = relation # this is actually a table (I think)
@@ -12,12 +13,13 @@ module Arel
       @alias    = options[:alias]
       @ancestor = options[:ancestor]
       @history  = [self] + (@ancestor ? @ancestor.history : [])
-      @root = @history.last
       @original_relation = nil
       @original_attribute = nil
+    end
 
+    def hash
       # FIXME: I think we can remove this eventually
-      @hash     = name.hash + root.relation.class.hash
+      name.hash + relation.class.hash
     end
 
     def engine
@@ -55,8 +57,17 @@ module Arel
       Attribute.new(relation, name, :alias => aliaz, :ancestor => self)
     end
 
+    def initialize_copy other
+      @ancestor = other
+      @history  = [self] + @ancestor.history
+    end
+
     def bind(new_relation)
-      relation == new_relation ? self : Attribute.new(new_relation, name, :alias => @alias, :ancestor => self)
+      return self if relation == new_relation
+
+      obj = clone
+      obj.relation = new_relation
+      obj
     end
 
     def to_attribute(relation)

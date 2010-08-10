@@ -161,6 +161,10 @@ module Arel
         ].compact.join ' '
       end
 
+      def visit_Arel_Alias o
+        "#{visit o.table} #{quote_table_name(o.name)}"
+      end
+
       def visit_Arel_Where o
         o.predicates.map { |x| visit x }.join ' AND '
       end

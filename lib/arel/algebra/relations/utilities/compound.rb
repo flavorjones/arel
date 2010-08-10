@@ -2,7 +2,7 @@ module Arel
   class Compound
     include Relation
 
-    attr_reader :relation, :engine
+    attr_accessor :relation, :engine
 
     def initialize relation
       @relation    = relation

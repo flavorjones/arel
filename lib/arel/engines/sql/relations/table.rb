@@ -17,11 +17,11 @@ module Arel
     alias :table_exists? :table_exists
 
     def initialize(name, options = {})
-      @name = name.to_s
-      @table_exists = nil
-      @table_alias = nil
-      @christener = Sql::Christener.new
-      @attributes = nil
+      @name                = name.to_s
+      @table_exists        = nil
+      @table_alias         = nil
+      @christener          = Sql::Christener.new
+      @attributes          = nil
       @matching_attributes = nil
 
       if options.is_a?(Hash)
@@ -35,6 +35,8 @@ module Arel
       else
         @engine = options # Table.new('foo', engine)
       end
+
+      @aliases = { self => (@table_alias || @name) }
 
       if @engine.connection
         begin
@@ -52,6 +54,10 @@ module Arel
         @table_exists = @@tables.include?(name) ||
           @engine.connection.table_exists?(name)
       end
+    end
+
+    def name_for aliaz
+      @aliases[aliaz] ||= "#{@aliases[self]}_#{@aliases.length + 1}"
     end
 
     def as(table_alias)
