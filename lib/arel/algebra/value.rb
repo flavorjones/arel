@@ -1,6 +1,7 @@
 module Arel
   class Value
-    attr_reader :value, :relation
+    attr_accessor :relation
+    attr_reader :value
 
     def initialize value, relation
       @value = value

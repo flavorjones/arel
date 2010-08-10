@@ -54,13 +54,19 @@ module Arel
 
         # If no columns were specified, use the table attributes
         if projects.blank?
-          source = sources.last
-          case source
-          when InnerJoin
-            projects = source.relation1.attributes | source.relation2.attributes
-          else
-            projects = source.attributes
+          column_sources = sources.dup
+          column_tables = []
+          until column_sources.empty?
+            source = column_sources.pop
+            case source
+            when InnerJoin
+              column_sources << source.relation2
+              column_sources << source.relation1
+            else
+              projects += source.attributes
+            end
           end
+          projects.uniq!
         end
 
         # SELECT <PROJECT> FROM <TABLE> WHERE <WHERE> LIMIT <TAKE>
@@ -135,6 +141,7 @@ module Arel
       alias :visit_Arel_Sql_Attributes_Integer :visit_Arel_Attribute
       alias :visit_Arel_Sql_Attributes_Time :visit_Arel_Attribute
       alias :visit_Arel_Sql_Attribute :visit_Arel_Attribute
+      alias :visit_Arel_Sql_Attributes_Boolean :visit_Arel_Attribute
 
       def visit_Arel_StringJoin o
         o.relation2

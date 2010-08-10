@@ -19,7 +19,7 @@ module Arel
 
     def hash
       # FIXME: I think we can remove this eventually
-      name.hash + relation.class.hash
+      name.hash + relation.hash
     end
 
     def engine
