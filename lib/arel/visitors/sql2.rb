@@ -198,7 +198,9 @@ module Arel
       alias :visit_Arel_Sum :visit_Arel_Expression
 
       def visit_Arel_Predicates_Equality o
-        "#{visit o.operand1} #{o.predicate_sql} #{visit o.operand2}"
+        right = visit o.operand2
+        right = quote right if ::String === o.operand2
+        "#{visit o.operand1} #{o.predicate_sql} #{right}"
       end
       alias :visit_Arel_Predicates_Inequality :visit_Arel_Predicates_Equality
 
