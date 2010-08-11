@@ -6,6 +6,7 @@ module Arel
 
     def initialize relation
       @table = relation
+      @table = @table.relation until @table == @table.relation
       super
     end
 

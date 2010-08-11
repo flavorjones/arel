@@ -15,5 +15,6 @@ end
 
 require 'arel/nodes'
 require 'arel/visitors/sql'
+require 'arel/visitors/tree_conversion'
 require 'arel/visitors/sql2'
 require 'arel/visitors/dot'

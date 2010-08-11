@@ -4,77 +4,7 @@ module Arel
       DISPATCH = {}
 
       def self.linked_list_to_tree cursor
-        if $DEBUG
-          viz = Arel::Visitors::Dot.new
-          File.open(File.expand_path('~/h.dot'), 'wb') do |f|
-            f.write viz.accept cursor
-          end
-        end
-
-        projects = []
-        tables   = []
-        wheres   = []
-        sources  = []
-        joins    = []
-        orders   = []
-        offset   = nil
-        having   = nil
-        groups   = []
-        takes    = []
-
-        loop do
-          case cursor
-          when Arel::Project
-            projects << cursor
-          when Arel::StringJoin
-            sources << cursor
-            cursor = cursor.relation1
-            next
-          when Arel::Table, Arel::From
-            sources << cursor
-            break
-          when Arel::Join
-            sources << cursor
-            break
-          when Arel::Where
-            wheres << cursor
-          when Arel::Take
-            takes << cursor
-          when Arel::Group
-            groups << cursor
-          when Arel::Order
-            orders << cursor
-          when Arel::Skip
-            offset = cursor
-          when Arel::Having
-            having = cursor
-          end
-          cursor = cursor.relation
-        end
-
-        # If no columns were specified, use the table attributes
-        if projects.blank?
-          column_sources = sources.dup
-          column_tables = []
-          until column_sources.empty?
-            source = column_sources.pop
-            case source
-            when InnerJoin
-              column_sources << source.relation2
-              column_sources << source.relation1
-            else
-              projects += source.attributes
-            end
-          end
-          projects.uniq!
-        end
-
-        # SELECT <PROJECT> FROM <TABLE> WHERE <WHERE> LIMIT <TAKE>
-        engine = sources.first.engine
-
-        Nodes::Select.new(
-          projects,
-          sources.reverse, wheres, groups, having, orders, takes, offset, engine)
+        TreeConversion.new.accept cursor
       end
 
       def initialize engine
