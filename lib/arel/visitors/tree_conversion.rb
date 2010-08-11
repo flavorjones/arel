@@ -12,7 +12,9 @@ module Arel
         @having   = nil
         @groups   = []
         @takes    = []
-        @join     = false
+        @join_stack = []
+
+        @column_sources = []
       end
 
       def accept object
@@ -27,7 +29,7 @@ module Arel
 
         # If no columns were specified, use the table attributes
         if @projects.blank?
-          column_sources = @sources.dup
+          column_sources = @column_sources.dup
           column_tables = []
           until column_sources.empty?
             source = column_sources.pop
@@ -45,9 +47,9 @@ module Arel
         # SELECT <PROJECT> FROM <TABLE> WHERE <WHERE> LIMIT <TAKE>
         engine = @sources.first.engine
 
-        Nodes::Select.new(
+        node = Nodes::Select.new(
           @projects,
-          @sources.reverse,
+          @sources.reverse.uniq,
           @wheres,
           @groups,
           @having,
@@ -56,6 +58,8 @@ module Arel
           @offset,
           engine
         )
+        node.joins = @joins
+        node
       end
 
       private
@@ -95,7 +99,7 @@ module Arel
       end
 
       def visit_Arel_Where o
-        if @join
+        unless @join_stack.empty?
           predicates = o.predicates.map { |x| x.clone }
 
           relation = @sources.last.predicates.first.relation
@@ -126,23 +130,26 @@ module Arel
       end
 
       def visit_Arel_Alias o
-        @sources << o unless @join
+        @column_sources << o
+        @sources << o if @join_stack.empty?
         visit o.relation
       end
 
       def visit_Arel_Table o
-        @sources << o unless @join
+        @column_sources << o
+        @sources << o #if @join_stack.empty?
       end
       alias :visit_Arel_From :visit_Arel_Table
 
       def visit_Arel_Join o
-        @join = true
-        @sources << o
+        @join_stack.push o
+        @joins << o
         visit o.relation1
         visit o.relation2
-        @join = false
+        @join_stack.pop
       end
       alias :visit_Arel_InnerJoin :visit_Arel_Join
+      alias :visit_Arel_OuterJoin :visit_Arel_Join
     end
   end
 end

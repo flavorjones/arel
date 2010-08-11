@@ -1,8 +1,8 @@
 module Arel
   module Nodes
     class Select < Arel::Nodes::Node
-      attr_reader :columns, :sources, :wheres, :groups, :orders, :limits
-      attr_reader :offset, :engine, :having
+      attr_accessor :columns, :sources, :wheres, :groups, :orders, :limits
+      attr_accessor :offset, :engine, :having, :joins
 
       def initialize columns, sources, wheres, groups, having, orders, limits, offset, engine = Table.engine
         @columns = columns
@@ -14,6 +14,7 @@ module Arel
         @limits  = limits
         @offset  = offset
         @engine  = engine
+        @joins   = []
       end
 
       def to_sql

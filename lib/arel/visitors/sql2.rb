@@ -33,6 +33,7 @@ module Arel
         [
           "SELECT #{o.columns.map { |c| visit c }.join(', ')}",
           "FROM   #{o.sources.map { |c| visit c }.join(' ')}",
+          (o.joins.map { |c| visit c }.join(' ') unless o.joins.empty?),
           ("WHERE  #{o.wheres.map { |c| visit c }.join(' AND ')}" unless o.wheres.empty?),
           ("GROUP BY #{o.groups.map { |c| visit c }.join(', ')}" unless o.groups.empty?),
           (visit o.having if o.having),
@@ -47,8 +48,9 @@ module Arel
       end
 
       def visit_Arel_InnerJoin o
-        "#{visit o.relation1} #{o.join_sql} #{visit o.relation2} ON #{o.predicates.map { |x| visit x }.join ' AND ' }"
+        "#{o.join_sql} #{visit o.relation2} ON #{o.predicates.map { |x| visit x }.join ' AND ' }"
       end
+      alias :visit_Arel_OuterJoin :visit_Arel_InnerJoin
 
       def visit_Arel_Nodes_Subquery o
         "(#{visit o.expression}) AS #{visit o.alias}"

@@ -77,6 +77,7 @@ module Arel
         @stack.push o
         call(o, :columns) { |t| visit t }
         call(o, :sources) { |t| visit t }
+        call(o, :joins) { |t| visit t }
         call(o, :wheres) { |t| visit t }
         call(o, :limits) { |t| visit t }
         @stack.pop
