@@ -88,6 +88,11 @@ module Arel
         @operand = operand
       end
 
+      def initialize_copy copy
+        super
+        @operand = copy.operand.clone
+      end
+
       def bind(relation)
         self.class.new(operand.find_correlate_in(relation))
       end
@@ -125,6 +130,11 @@ module Arel
       def initialize left, right
         super(left)
         @operand2 = right
+      end
+
+      def initialize_copy parent
+        super
+        @operand2 = parent.operand2.clone
       end
 
       def relation

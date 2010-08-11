@@ -4,7 +4,14 @@ module Arel
       DISPATCH = {}
 
       def self.linked_list_to_tree cursor
-        TreeConversion.new.accept cursor
+        node = TreeConversion.new.accept cursor
+        if $DEBUG
+          viz = Arel::Visitors::Dot.new
+          File.open(File.expand_path('~/i.dot'), 'wb') do |f|
+            f.write viz.accept node
+          end
+        end
+        node
       end
 
       def initialize engine

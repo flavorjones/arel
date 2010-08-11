@@ -12,6 +12,7 @@ module Arel
         @having   = nil
         @groups   = []
         @takes    = []
+        @join     = false
       end
 
       def accept object
@@ -94,7 +95,19 @@ module Arel
       end
 
       def visit_Arel_Where o
-        @wheres << o
+        if @join
+          predicates = o.predicates.map { |x| x.clone }
+
+          relation = @sources.last.predicates.first.relation
+
+          predicates.each do |pred|
+            pred.operand1.relation = relation
+            pred.operand2.relation = relation
+          end
+          @sources.last.predicates.concat predicates
+        else
+          @wheres << o
+        end
         visit o.relation
       end
 
@@ -113,14 +126,22 @@ module Arel
       end
 
       def visit_Arel_Alias o
-        @sources << o
+        @sources << o unless @join
+        visit o.relation
       end
 
-      def visit_Arel_Join o
-        @sources << o
+      def visit_Arel_Table o
+        @sources << o unless @join
       end
-      alias :visit_Arel_Table :visit_Arel_Join
-      alias :visit_Arel_From :visit_Arel_Join
+      alias :visit_Arel_From :visit_Arel_Table
+
+      def visit_Arel_Join o
+        @join = true
+        @sources << o
+        visit o.relation1
+        visit o.relation2
+        @join = false
+      end
       alias :visit_Arel_InnerJoin :visit_Arel_Join
     end
   end
